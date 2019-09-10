@@ -10,6 +10,8 @@ git submodule update --init external/qpoases
 
 git checkout teensy_platform
 echo "TEMPLATES_PATH = $(pwd)/../../" > Makefile.local
+git submodule update
+
 make -j4
 popd
 
