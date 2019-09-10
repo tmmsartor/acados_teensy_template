@@ -36,7 +36,6 @@
 #include <stdlib.h>
 
 #include "acados/utils/print.h"
-#include "acados/ocp_qp/ocp_qp_partial_condensing_solver.h"
 #include "acados/ocp_nlp/ocp_nlp_constraints_bghp.h"
 #include "acados/ocp_nlp/ocp_nlp_cost_ls.h"
 #include "acados/ocp_nlp/ocp_nlp_dynamics_common.h"
@@ -53,7 +52,8 @@
 
 #define FORMULATION 1 // 0 without Vz*z term 1 with Vz*z and without Vx*x
 
-void setup() {
+void setup()
+	{
 
 	int num_states = 2, num_controls = 2, N = 20;
 	int num_alg_states = 2;
@@ -82,10 +82,10 @@ void setup() {
 	int nu[N+1];
 	int nbx[N+1];
 	int nbu[N+1];
-	int nb[N+1];
+	int	nb[N+1];
 	int ng[N+1];
 	int nh[N+1];
-	int ns[N+1];
+	int	ns[N+1];
 	int nz[N+1];
 	int ny[N+1];
 
@@ -172,7 +172,7 @@ void setup() {
 	ocp_nlp_plan *plan = ocp_nlp_plan_create(N);
 	plan->nlp_solver = SQP;
 	plan->ocp_qp_solver_plan.qp_solver = PARTIAL_CONDENSING_HPIPM;
-	// plan->ocp_qp_solver_plan.qp_solver = FULL_CONDENSING_QPOASES;
+//	plan->ocp_qp_solver_plan.qp_solver = FULL_CONDENSING_QPOASES;
 	for (int i = 0; i <= N; i++)
 		plan->nlp_cost[i] = LINEAR_LS;
 	for (int i = 0; i < N; i++)
@@ -323,13 +323,20 @@ void setup() {
 	for (int i = 0; i < N; i++) ocp_nlp_dynamics_opts_set(config, nlp_opts, i, "jac_reuse", &reuse_val);
 	for (int i = 0; i < N; i++) ocp_nlp_dynamics_opts_set(config, nlp_opts, i, "num_steps", &num_steps_val);
 
-	ocp_nlp_sqp_opts *sqp_opts = (ocp_nlp_sqp_opts *) nlp_opts;
-	sqp_opts->max_iter = max_num_sqp_iterations;
-	sqp_opts->tol_stat = 1e-6;
-	sqp_opts->tol_eq = 1e-6;
-	sqp_opts->tol_ineq = 1e-6;
-	sqp_opts->tol_comp = 1e-6;
-	((ocp_qp_partial_condensing_solver_opts *) sqp_opts->qp_solver_opts)->pcond_opts->N2 = N;
+	double tol_stat = 1e-6;
+	double tol_eq	= 1e-6;
+	double tol_ineq = 1e-6;
+	double tol_comp = 1e-6;
+	ocp_nlp_opts_set(config, nlp_opts, "max_iter", &max_num_sqp_iterations);
+	ocp_nlp_opts_set(config, nlp_opts, "tol_stat", &tol_stat);
+	ocp_nlp_opts_set(config, nlp_opts, "tol_eq", &tol_eq);
+	ocp_nlp_opts_set(config, nlp_opts, "tol_ineq", &tol_ineq);
+	ocp_nlp_opts_set(config, nlp_opts, "tol_comp", &tol_comp);
+	if(plan->ocp_qp_solver_plan.qp_solver == PARTIAL_CONDENSING_HPIPM)
+	{
+		int N2 = N;
+		ocp_nlp_opts_set(config, nlp_opts, "qp_cond_N", &N2);
+	}
 
 	ocp_nlp_out *nlp_out = ocp_nlp_out_create(config, dims);
 	for (int i = 0; i <= N; ++i) {
@@ -360,6 +367,7 @@ void setup() {
 	free(W);
 	free(WN);
 
-	// return solver_status;
-}
+	return solver_status;
+	}
+
 void loop(){}
