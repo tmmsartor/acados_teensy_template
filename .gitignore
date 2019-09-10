@@ -1,0 +1,15 @@
+# toolchain
+teensy3
+teensy4
+tools
+
+.*.sw[a-z]
+build/
+*.so
+*.a
+*.o
+*.d
+
+libraries/acados
+libraries/blasfeo
+libraries/hpipm
